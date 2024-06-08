@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scientific Paper Query</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 50px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 800px;
+        }
+        .result {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        .result h3 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">Scientific Paper Query</h1>
+        <h2 class="text-center">Query for a Keyword to find matching scientific Papers f.e. quantum physics</h2>
+        <form id="query-form" class="form-inline justify-content-center mb-4">
+            <input type="text" id="query" class="form-control mr-2" placeholder="Enter query" />
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+        <div id="results"></div>
+    </div>
+
+    <!-- Bootstrap and jQuery JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        document.getElementById('query-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const query = document.getElementById('query').value;
+            const response = await fetch('/query', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query }),
+            });
+            const data = await response.json();
+            displayResults(data);
+        });
+
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+            if (data.error) {
+                resultsDiv.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                return;
+            }
+            data.forEach(result => {
+                const resultDiv = document.createElement('div');
+                resultDiv.classList.add('result');
+                resultDiv.innerHTML = `
+                    <h3>ID: ${result.id}</h3>
+                    <p><strong>Abstract:</strong> ${result.abstract}</p>
+                    <p><strong>Metadata:</strong></p>
+                    <ul>
+                        ${Object.entries(result.metadata).map(([key, value]) => `<li><strong>${key}:</strong> ${value}</li>`).join('')}
+                    </ul>
+                `;
+                resultsDiv.appendChild(resultDiv);
+            });
+        }
+    </script>
+</body>
+</html>
